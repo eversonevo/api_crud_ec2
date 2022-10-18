@@ -46,3 +46,38 @@ exports.getIdProduto = async (req, res, next) => {
         return res.status(500).send({ error: error });
     }
 };
+
+// *********************************************************************************************
+
+// INSERE PRODUTO - USANDO ASYNC / AWAIT - FUNCTION SÓ PARA ACESSAR MYSQL
+exports.insereProduto = async (req, res, next) => {
+    try {
+        const query = "INSERT INTO produtos (nome, preco,imagem_produto) VALUES (?,?,?);";
+        const result = await mysql.execute(query, [
+            req.body.nome,
+            req.body.preco,
+            req.file.path
+        ]);
+        console.log(result);
+
+        const response = {
+            mensagem: 'Produto inserido com sucesso!',
+            produtoCriado: {
+                id_produto: result.insertId,
+                nome: req.body.nome,
+                preco: req.body.preco,
+                imagem_produto: process.env.URL_IMAGE_PROD+req.file.path,
+                request: {
+                    tipo: 'POST',
+                    description: 'Insere um produto',
+                    url: process.env.URL_API + 'produtos'
+                }
+            }
+        }
+        return res.status(201).send(response);
+
+    } catch (error) {
+        return res.status(500).send({error:error});
+    }
+}
+
